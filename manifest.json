@@ -1,0 +1,15 @@
+{
+  "name": "xeu pwa",
+  "short_name": "PWAxeu",
+  "lang": "fr-FR",
+  "start_url": "/index.html",
+  "display": "fullscreen",
+  "orientation": "any",
+  "theme_color": "#2b70c7",
+  "icons": [
+    {
+      "src": "/assets/homepage.png",
+      "sizes": "192x192"
+    }
+  ]
+}
