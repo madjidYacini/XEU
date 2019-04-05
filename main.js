@@ -3,10 +3,31 @@ let convertHistory = [];
 const STORAGE_HISTORY_KEY = "pwanimexeu.history";
 
 let SECRET_KEY = "fd6ae76502be6b395cbf6cdc8573659a";
-const API_BASE = `http://data.fixer.io/api/latest?access_key=${SECRET_KEY}&base=EUR`;
+const API_BASE = `http://data.fixer.io/api/latest?access_key=${SECRET_KEY}&base=EUR&symbols=CHF,CNY,GBP,AUD,USD`;
+
+(async () => {
+  try {
+    let storage = JSON.parse(localStorage.getItem(STORAGE_HISTORY_KEY));
+    if (!storage) {
+      const responseGeneral = await fetch(API_BASE);
+      if (!responseGeneral.ok) {
+        return;
+      }
+
+      let res = await responseGeneral.json();
+      console.log("sssssssssss=======>", res);
+
+      localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(res.rates));
+    }
+  } catch (error) {
+    console.log("====================================");
+    console.log(error);
+    console.log("====================================");
+  }
+})();
 
 async function clickConvert() {
-  let amount = document.querySelector("#mount").value;
+  let amount = document.querySelector("#amount").value;
   let toConvert = document.getElementById("toConvert");
   for (let index = 0; index < toConvert.options.length; index++) {
     if (toConvert.options[index].selected == true) {
@@ -15,34 +36,21 @@ async function clickConvert() {
       }
     }
   }
+
+  // calculate
   try {
-    const response = await fetch(`${API_BASE}&symbols=${convertArray.join()}`);
-    if (!response.ok) {
-      return;
-    }
-    let results = await response.json();
-    let rates = results.rates;
-    for (var key in rates) {
-      if (rates.hasOwnProperty(key)) {
-        rates[key] = rates[key] * amount;
-      }
-    }
+    let storage = JSON.parse(localStorage.getItem(STORAGE_HISTORY_KEY));
+    let rates = {};
+    convertArray.forEach(money => {
+      rates[money] = storage[money] * amount;
+    });
     document.querySelector("#current").innerHTML = "";
-    addCUrrencyToMarkupSelector([results.rates], "#current");
-    updateHistory(results.rates);
+    addCUrrencyToMarkupSelector([rates], "#current");
+
     convertArray = [];
   } catch (error) {
     console.log("ERROR:", error);
   }
-}
-
-function updateHistory(currencyToStore) {
-  console.log(currencyToStore);
-  convertHistory.push(currencyToStore);
-  console.log(convertHistory);
-
-  addCUrrencyToMarkupSelector([currencyToStore], "#history");
-  localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(convertHistory));
 }
 function addCUrrencyToMarkupSelector(convertCurrency, selector) {
   console.log(convertCurrency, selector);
@@ -59,7 +67,8 @@ function addCurrencyMarkup(convertCurrency) {
   let content = "";
 
   key.forEach((element, i) => {
-    content += `
+    if (element !== "amount") {
+      content += `
     <div class ="row">
         <div class="card col-sm-4 " style="width: 18rem;">
             <div class="card-body">
@@ -69,6 +78,7 @@ function addCurrencyMarkup(convertCurrency) {
       </div>
       </div>
     `;
+    }
   });
 
   return content;
@@ -76,13 +86,6 @@ function addCurrencyMarkup(convertCurrency) {
 
 async function installServiceWorkerAsync() {
   let storage = JSON.parse(localStorage.getItem(STORAGE_HISTORY_KEY));
-  console.log("====================================");
-  console.log(storage);
-  console.log("====================================");
-  if (storage) {
-    convertHistory = storage;
-    addCUrrencyToMarkupSelector(convertHistory, "#history");
-  }
   if ("serviceWorker" in navigator) {
     try {
       const sw = await navigator.serviceWorker.register("/service-worker.js");
