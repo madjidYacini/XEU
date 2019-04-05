@@ -3,7 +3,7 @@ let convertHistory = [];
 const STORAGE_HISTORY_KEY = "pwanimexeu.history";
 
 let SECRET_KEY = "fd6ae76502be6b395cbf6cdc8573659a";
-const API_BASE = `http://data.fixer.io/api/latest?access_key=${SECRET_KEY}&base=EUR&symbols=CHF,CNY,GBP,AUD,USD`;
+const API_BASE = `http://localhost:4242/api/xeu`;
 
 (async () => {
   try {
@@ -15,7 +15,6 @@ const API_BASE = `http://data.fixer.io/api/latest?access_key=${SECRET_KEY}&base=
       }
 
       let res = await responseGeneral.json();
-      console.log("sssssssssss=======>", res);
 
       localStorage.setItem(STORAGE_HISTORY_KEY, JSON.stringify(res.rates));
     }
